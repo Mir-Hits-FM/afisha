@@ -3,102 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Интерактивная Радио-Афиша</title>
+    <title>Mir-Hits-FM | Live Space</title>
     <style>
+        /* 1. БАЗОВЫЕ СТИЛИ (КОСМОС) */
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); 
+            overflow: hidden; background: #000;
             display: flex; flex-direction: column; align-items: center;
-            font-family: 'Orbitron', sans-serif; /* Футуристичный шрифт */
+            justify-content: space-between;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Стильные неоновые часы */
+        #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+        /* 2. НЕОНОВЫЕ ЧАСЫ */
         #clock {
-            margin-top: 30px;
-            font-size: 3rem;
-            color: #00ff00; /* Зеленый неон */
-            text-shadow: 0 0 20px #00ff00, 0 0 40px #008000;
-            font-weight: bold;
-            letter-spacing: 5px;
-            background: rgba(0,0,0,0.5);
-            padding: 10px 30px;
-            border-radius: 15px;
-            border: 1px solid rgba(0, 255, 0, 0.2);
+            margin-top: 25px; font-size: 3.5rem; color: #00ff00;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px);
+            padding: 15px 40px; border-radius: 20px;
+            border: 1px solid rgba(0, 255, 0, 0.3); z-index: 10;
+            min-width: 280px; text-align: center; font-variant-numeric: tabular-nums;
         }
 
-        .poster-container {
-            flex-grow: 1;
+        /* 3. АДАПТИВНЫЙ СЛАЙДЕР АФИШ */
+        .slider {
+            position: relative; width: 85%; height: 45vh;
+            display: flex; justify-content: center; align-items: center; z-index: 5;
+        }
+        .slider picture {
+            position: absolute; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
-            padding: 20px;
-            animation: float 4s ease-in-out infinite;
+            opacity: 0; transition: opacity 1.5s ease-in-out;
+        }
+        .slider picture.active { opacity: 1; }
+        .slider img {
+            max-width: 100%; max-height: 100%; border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.15); object-fit: contain;
         }
 
-        img { 
-            max-width: 95%; max-height: 60vh; 
-            border-radius: 15px;
-            box-shadow: 0 0 40px rgba(0, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* 4. СТЕКЛЯННЫЙ ПЛЕЕР */
+        .player-panel {
+            z-index: 30; background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px); border: 1px solid rgba(0, 255, 0, 0.2);
+            border-radius: 60px; padding: 12px 30px;
+            display: flex; align-items: center; gap: 20px;
+            margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
+        .play-btn {
+            width: 55px; height: 55px; background: #00ff00; border: none;
+            border-radius: 50%; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: 0.4s;
+            font-size: 1.5rem; color: #000; box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+        .play-btn:hover { transform: scale(1.15); box-shadow: 0 0 25px #00ff00; }
+        
+        .status-led { width: 12px; height: 12px; background: #333; border-radius: 50%; transition: 0.3s; }
+        .status-led.on {
+            background: #00ff00; box-shadow: 0 0 15px #00ff00;
+            animation: pulse-led 1.5s infinite;
+        }
+        @keyframes pulse-led { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-        /* Бегущая строка */
+/* 5. ИНФОРМАЦИОННАЯ СТРОКА С ЭФФЕКТОМ SHADOW */
         .marquee-container {
-            width: 100%; background: #000;
-            border-top: 2px solid #00ff00;
-            padding: 12px 0; position: absolute; bottom: 0;
+            width: 100%; 
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 2px solid #00ff00; 
+            padding: 15px 0; 
+            z-index: 20;
+            overflow: hidden; 
+            box-shadow: 0 -5px 25px rgba(0, 255, 0, 0.2);
         }
 
         .marquee-text {
-            white-space: nowrap; display: inline-block;
-            animation: marquee 25s linear infinite;
-            color: #fff; font-size: 1.3rem; font-weight: bold;
+            white-space: nowrap; 
+            display: inline-block;
+            animation: marquee-move 30s linear infinite;
+            color: #ffffff; 
+            font-size: 1.2rem; 
+            font-weight: 800; /* Делаем шрифт жирнее для лучшей тени */
             text-transform: uppercase;
+            letter-spacing: 1.5px;
+            
+            /* ГЛУБОКАЯ ТЕНЬ ДЛЯ ВСЕГО ТЕКСТА (Shadow стиль) */
+            text-shadow: 3px 3px 4px rgba(0, 0, 0, 1), 
+                         0 0 10px rgba(255, 255, 255, 0.2);
         }
 
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+        .marquee-text span { margin-right: 50px; }
+
+        /* СТИЛЬ ДЛЯ ДАННЫХ ИЗ ПОТОКА (Зеленое свечение) */
+        [data-myinfo] { 
+            color: #00ff00 !important; 
+            font-weight: 900;
+            /* Тройная тень: четкий контур + два слоя свечения */
+            text-shadow: 2px 2px 3px #000, 
+                         0 0 15px rgba(0, 255, 0, 0.8), 
+                         0 0 5px rgba(0, 255, 0, 1) !important;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
+        @keyframes marquee-move { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
+        /* МОБИЛЬНАЯ АДАПТАЦИЯ */
         @media (max-width: 600px) {
-            #clock { font-size: 2rem; }
-            .marquee-text { font-size: 0.9rem; }
+            #clock { font-size: 2.2rem; min-width: 200px; padding: 10px 20px; }
+            .slider { height: 40vh; width: 95%; }
+            .player-panel { padding: 10px 20px; gap: 12px; }
+            .play-btn { width: 45px; height: 45px; font-size: 1.2rem; }
+            .marquee-text { font-size: 1rem; }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
 </head>
 <body>
 
+    <canvas id="starfield"></canvas>
+
     <div id="clock">00:00:00</div>
 
-    <div class="poster-container">
-        <img src="https://vmfile.com/upload/838/1415274579.jpg" alt="Афиша">
+    <div class="slider" id="slider">
+        <picture class="active">
+            <source srcset="https://vmfile.com/upload/838/1415274579.jpg" media="(max-width: 600px)">
+            <img src="https://vmfile.com/upload/838/1415274579.jpg" alt="Afisha 1">
+        </picture>
+        <picture>
+            <source srcset="https://vmfile.com/upload/838/3022723018.gif" media="(max-width: 600px)">
+            <img src="https://vmfile.com/upload/838/3022723018.gif" alt="Afisha 2">
+        </picture>
     </div>
+
+    <div class="player-panel">
+        <div class="status-led" id="led"></div>
+        <button class="play-btn" id="playBtn">▶</button>
+        <div style="color: #fff; font-size: 14px; letter-spacing: 2px; font-weight: bold;">RADIO MIR-HITS-FM</div>
+    </div>
+
+    <audio id="radio"></audio>
 
     <div class="marquee-container">
         <div class="marquee-text">
-            СЛУШАЙТЕ ЛУЧШИЕ ХИТЫ НА НАШЕМ РАДИО! ⚡ ВРЕМЯ ЭФИРА БЛИЗКО! ⚡ ЗАКАЗЫВАЙТЕ ПЕСНИ ПРЯМО СЕЙЧАС! ⚡
+            <span>🚀 ДОБРО ПОЖАЛОВАТЬ В КОСМОС МУЗЫКИ 🚀</span>
+            <span>СЕЙЧАС ИГРАЕТ: <span class="meta-data" data-myinfo="song">...</span></span>
+            <span>В ЭФИРЕ: <span class="meta-highlight" data-myinfo="streamname">LIVE STREAM</span></span>
+            <span>✨ МИРОВЫЕ ХИТЫ FM — ТВОЯ ВОЛНА ✨</span>
         </div>
     </div>
 
     <script>
-        // Функция для обновления часов
-        function updateClock() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+        // --- 1. АНИМАЦИЯ ЗВЕЗДНОГО НЕБА ---
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        function initSpace() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            stars = [];
+            const colors = ["#ffffff", "#80dfff", "#b380ff", "#ffcc00", "#ff80ed"];
+            for (let i = 0; i < 180; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                    size: Math.random() * 2.2, color: colors[Math.floor(Math.random() * colors.length)],
+                    opacity: Math.random(), blink: 0.003 + Math.random() * 0.01
+                });
+            }
         }
+        window.addEventListener('resize', initSpace);
+        initSpace();
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(s => {
+                ctx.globalAlpha = s.opacity; ctx.fillStyle = s.color;
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill();
+                s.opacity += s.blink; if (s.opacity > 1 || s.opacity < 0) s.blink = -s.blink;
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
 
-        // Запускаем часы каждую секунду
-        setInterval(updateClock, 1000);
-        updateClock(); // Сразу показываем время
+        // --- 2. ЖИВЫЕ ЧАСЫ ---
+        setInterval(() => {
+            document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+        }, 1000);
+
+        // --- 3. АВТО-СЛАЙДЕР ---
+        const slides = document.querySelectorAll('#slider picture');
+        let current = 0;
+        setInterval(() => {
+            if(slides.length > 0) {
+                slides[current].classList.remove('active');
+                current = (current + 1) % slides.length;
+                slides[current].classList.add('active');
+            }
+        }, 6000);
+
+        // --- 4. ПЛЕЕР С ЗАЩИТОЙ ОТ "ПРОШЛОГО" ---
+        const radio = document.getElementById('radio');
+        const playBtn = document.getElementById('playBtn');
+        const led = document.getElementById('led');
+        const streamUrl = "https://myradio24.org/9209"; 
+
+        playBtn.onclick = () => {
+            if (radio.paused || radio.src === "") {
+                // Сброс кэша для прямого эфира
+                radio.src = streamUrl + "?nocache=" + Date.now();
+                radio.load();
+                radio.play().catch(e => console.log("Буферизация..."));
+                playBtn.textContent = '⏸';
+                led.classList.add('on');
+            } else {
+                radio.pause();
+                radio.src = ""; // Останавливаем загрузку данных
+                playBtn.textContent = '▶';
+                led.classList.remove('on');
+            }
+        };
     </script>
+
+    <script src="https://myradio24.com/player/player.js?v3.26" data-port="9209" data-interval="15" data-vmid="0"></script>
 
 </body>
 </html>
